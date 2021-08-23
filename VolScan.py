@@ -44,8 +44,13 @@ import numpy as np
 from time import sleep
 from datetime import datetime
 
-from Binance_Detect_Moonings import txcolors
+from binance.client import Client
+
 from helpers.parameters import parse_args, load_config
+# Load creds modules
+from helpers.handle_creds import (
+    load_correct_creds
+)
 
 args = parse_args()
 DEFAULT_CONFIG_FILE = 'config.yml'
@@ -64,6 +69,7 @@ EX_PAIRS = parsed_config['trading_options']['EX_PAIRS']
 access_key, secret_key = load_correct_creds(parsed_creds)
 client = Client(access_key, secret_key)
 
+
 # SCANNING_PERIOD - by default, we check the price difference for each coin on Binance for the last 3 minutes,
 # you can change this value for different results.
 # This also determines how often each iteration of the code is executed.
@@ -77,15 +83,6 @@ TIME_SLEEP = 30  # seconds
 # If True, an updated list of coins will be generated from the site - http://edgesforledges.com/watchlists/binance.
 # If False, then the list you create in TICKERS_LIST = 'tickers.txt' will be used.
 CREATE_TICKER_LIST = True
-
-# When creating a ticker list from the source site:
-# http://edgesforledges.com you can use the parameter (all or innovation-zone).
-# ticker_type = 'innovation-zone'
-ticker_type = 'all'
-if CREATE_TICKER_LIST:
-    TICKERS_LIST = 'tickers_all_USDT.txt'
-else:
-    TICKERS_LIST = 'tickers.txt'
 
 # NUMBER_COINS_IN_LIST - Limit the number of coins that can be added to the dynamic list of volatile coins. For example,
 # if NUMBER_COINS_IN_LIST = 20,
@@ -109,6 +106,15 @@ CREATE_LIST_BY_COV_AND_PRICE_CHANGE = False
 # If False The list will be created only based on the Price Change.
 CREATE_LIST_BY_ONLY_COV = False
 
+# When creating a ticker list from the source site:
+# http://edgesforledges.com you can use the parameter (all or innovation-zone).
+# ticker_type = 'innovation-zone'
+ticker_type = 'all'
+if CREATE_TICKER_LIST:
+    TICKERS_LIST = 'tickers_all_USDT.txt'
+else:
+    TICKERS_LIST = 'tickers.txt'
+
 # BTC_FILTER - This feature is still in development.
 # Objective: Check the change in the price of bitcoin over the scanning period and,
 # based upon the results, either halt the bot from buying, or allow it to continue.
@@ -118,6 +124,19 @@ CREATE_LIST_BY_ONLY_COV = False
 
 
 SIGNAL_BOT_NAME = 'VolScan'
+
+class txcolors:
+    BUY = '\033[92m'
+    WARNING = '\033[93m'
+    SELL_LOSS = '\033[91m'
+    SELL_PROFIT = '\033[32m'
+    DIM = '\033[2m\033[35m'
+    DEFAULT = '\033[39m'
+    YELLOW = '\033[33m'
+    TURQUOISE = '\033[36m'
+    UNDERLINE = '\033[4m'
+    END = '\033[0m'
+    ITALICS = '\033[3m'
 
 
 # get_price() function, takes 1 parameter (Binance client).
