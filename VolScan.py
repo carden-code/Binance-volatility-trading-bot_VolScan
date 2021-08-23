@@ -49,13 +49,20 @@ from helpers.parameters import parse_args, load_config
 
 args = parse_args()
 DEFAULT_CONFIG_FILE = 'config.yml'
+DEFAULT_CREDS_FILE = 'creds.yml'
+
 config_file = args.config if args.config else DEFAULT_CONFIG_FILE
+creds_file = args.creds if args.creds else DEFAULT_CREDS_FILE
+parsed_creds = load_config(creds_file)
 parsed_config = load_config(config_file)
 
 # Load trading vars
 PAIR_WITH = parsed_config['trading_options']['PAIR_WITH']
 EX_PAIRS = parsed_config['trading_options']['EX_PAIRS']
 
+# Load creds for correct environment
+access_key, secret_key = load_correct_creds(parsed_creds)
+client = Client(access_key, secret_key)
 
 # SCANNING_PERIOD - by default, we check the price difference for each coin on Binance for the last 3 minutes,
 # you can change this value for different results.
@@ -164,9 +171,9 @@ def sort_list_coins(list_coins, sort_type='change_price'):
 # do_work () function, takes 1 parameter (Binance client). This is the main function of the module.
 # Which, in an endless cycle, searches for coins with a negative indicator of price change,
 # sorts them and gives buy signals.
-def do_work(client_api):
+def do_work():
     # Initializing coins for data storage.
-    init_price = get_price(client_api)
+    init_price = get_price(client)
     list_volatility = []
     count = 0
 
@@ -175,7 +182,7 @@ def do_work(client_api):
         print(f"{txcolors.YELLOW}Number of coins to scan - {len(init_price)}")
         # We reset the data every period.
         if count == (SCANNING_PERIOD * 60) / TIME_SLEEP:
-            init_price = get_price(client_api)
+            init_price = get_price(client)
             list_volatility = []
             count = 0
 
@@ -185,7 +192,7 @@ def do_work(client_api):
             print(f'{txcolors.YELLOW}{SIGNAL_BOT_NAME} Round {count} complete. Next scan in {TIME_SLEEP} seconds.')
             try:
                 # Requesting the latest coin prices
-                last_price = get_price(client_api)
+                last_price = get_price(client)
 
                 for coin in last_price:
                     # if len(init_price[coin]['price_list']) == (SCANNING_PERIOD * 60) / TIME_SLEEP:
