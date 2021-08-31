@@ -7,6 +7,5 @@
 
 
 prod:
-  access_key: replace_me
-  secret_key: replace_me
-
+  access_key: ""
+  secret_key: ""
